@@ -1,8 +1,8 @@
 package raf.sk.userservice.mapper;
 
 import org.springframework.stereotype.Component;
-import raf.sk.userservice.dto.UserCreateDto;
-import raf.sk.userservice.dto.UserPresentDto;
+import raf.sk.userservice.dto.user.UserCreateDto;
+import raf.sk.userservice.dto.user.UserPresentDto;
 import raf.sk.userservice.model.User;
 
 @Component

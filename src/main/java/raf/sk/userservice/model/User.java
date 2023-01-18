@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.sql.Date;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -23,4 +25,6 @@ public class User {
     private Integer numberOfRentDays;
     @ManyToOne(optional = false)
     private Role role;
+    @ManyToOne
+    private UserRank userRank;
 }

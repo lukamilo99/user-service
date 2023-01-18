@@ -1,4 +1,4 @@
-package raf.sk.userservice.dto;
+package raf.sk.userservice.dto.token;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

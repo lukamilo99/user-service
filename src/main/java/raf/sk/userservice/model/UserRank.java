@@ -1,13 +1,12 @@
 package raf.sk.userservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,4 +21,6 @@ public class UserRank {
     private Integer minNumberOfRentDays;
     private Integer maxNumberOfRentDays;
     private Integer discount;
+    @OneToMany(mappedBy = "userRank")
+    private List<User> listOfUsers;
 }
