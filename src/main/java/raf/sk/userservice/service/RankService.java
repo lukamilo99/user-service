@@ -1,5 +1,7 @@
 package raf.sk.userservice.service;
 
+import raf.sk.userservice.model.UserRank;
+
 public interface RankService {
-    Integer findDiscountByNumOfRentDays(int days);
+    UserRank findRankByNumOfRentDays(int days);
 }

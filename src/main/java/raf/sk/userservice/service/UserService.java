@@ -6,12 +6,13 @@ import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
 
 public interface UserService {
-    void register(UserCreateDto dto);
+    void registerClient(UserCreateDto dto);
+    void registerManager(UserCreateDto dto);
     TokenResponseDto login(TokenRequestDto tokenRequestDto);
     UserPresentDto findUserById(Long id);
     void banUserById(Long id);
+    void unbanUserById(Long id);
     void deleteUserById(Long id);
     void updateUserById(Long id, UserCreateDto dto);
-
     void updateUserReservationDays(Long id, int days);
 }

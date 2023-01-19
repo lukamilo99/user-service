@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface RankRepository extends JpaRepository<UserRank, Long> {
-    @Query("SELECT discount FROM UserRank WHERE ?1 BETWEEN minNumberOfRentDays AND maxNumberOfRentDays")
-    Optional<Integer> findDiscountByNumOfRentDay(int numberOfRentDays);
+    @Query("SELECT r FROM UserRank r WHERE ?1 BETWEEN r.minNumberOfRentDays AND r.maxNumberOfRentDays")
+    Optional<UserRank> findUserRankByNumOfRentDay(int numberOfRentDays);
 }

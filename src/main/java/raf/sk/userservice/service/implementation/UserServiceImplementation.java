@@ -11,6 +11,7 @@ import raf.sk.userservice.dto.token.TokenResponseDto;
 import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
 import raf.sk.userservice.mapper.UserMapper;
+import raf.sk.userservice.model.Role;
 import raf.sk.userservice.model.User;
 import raf.sk.userservice.model.UserRank;
 import raf.sk.userservice.repository.RankRepository;
@@ -19,7 +20,6 @@ import raf.sk.userservice.repository.UserRepository;
 import raf.sk.userservice.security.service.TokenService;
 import raf.sk.userservice.service.UserService;
 
-import java.util.List;
 import java.util.Optional;
 @Service
 @Transactional
@@ -32,13 +32,27 @@ public class UserServiceImplementation implements UserService {
     private TokenService tokenService;
 
     @Override
-    public void register(UserCreateDto dto) {
+    public void registerClient(UserCreateDto dto) {
         User user = userMapper.userCreateDtoToUser(dto);
         Optional<UserRank> rank = rankRepository.findById(1L);
+        Optional<Role> role = roleRepository.findByType("CLIENT");
         rank.ifPresent(user::setUserRank);
+        role.ifPresent(user::setRole);
+        role.ifPresent(role1 -> user.setRoleTypeBeforeBan(role1.getType()));
 
         userRepository.save(user);
     }
+
+    @Override
+    public void registerManager(UserCreateDto dto) {
+        User user = userMapper.userCreateDtoToUser(dto);
+        Optional<Role> role = roleRepository.findByType("MANAGER");
+        role.ifPresent(user::setRole);
+        role.ifPresent(role1 -> user.setRoleTypeBeforeBan(role1.getType()));
+
+        userRepository.save(user);
+    }
+
     @Override
     public TokenResponseDto login(TokenRequestDto tokenRequestDto) {
         String username = tokenRequestDto.getUsername();
@@ -72,6 +86,15 @@ public class UserServiceImplementation implements UserService {
         Optional<User> user = userRepository.findById(id);
         if(user.isPresent()) {
             user.get().setRole(roleRepository.findByType("BANNED").get());
+            userRepository.save(user.get());
+        }
+    }
+
+    @Override
+    public void unbanUserById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if(user.isPresent()) {
+            user.get().setRole(roleRepository.findByType(user.get().getRoleTypeBeforeBan()).get());
             userRepository.save(user.get());
         }
     }
@@ -114,12 +137,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     private UserRank isEligibleForUpgrade(int numberOfReservationDays){
-        List<UserRank> rankList = rankRepository.findAll();
-        for(UserRank userRank: rankList){
-            if(numberOfReservationDays >= userRank.getMinNumberOfRentDays() &&
-                    numberOfReservationDays <= userRank.getMaxNumberOfRentDays()){
-                return userRank;
-            }
+        Optional<UserRank> rank = rankRepository.findUserRankByNumOfRentDay(numberOfReservationDays);
+
+        if(rank.isPresent()){
+            return rank.get();
         }
         return null;
     }

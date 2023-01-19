@@ -27,4 +27,5 @@ public class User {
     private Role role;
     @ManyToOne
     private UserRank userRank;
+    private String roleTypeBeforeBan;
 }

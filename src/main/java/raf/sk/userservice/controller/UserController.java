@@ -8,6 +8,7 @@ import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
 import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
+import raf.sk.userservice.security.service.annotation.BanStop;
 import raf.sk.userservice.security.service.annotation.CheckPrivilege;
 import raf.sk.userservice.service.UserService;
 
@@ -17,18 +18,19 @@ import raf.sk.userservice.service.UserService;
 public class UserController {
     private UserService userService;
 
-    @PostMapping("/register/client")
+    @PostMapping("/register-client")
     public ResponseEntity<Void> registerClient(@RequestBody UserCreateDto userCreateDto){
-        userService.register(userCreateDto);
+        userService.registerClient(userCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/register/manager")
+    @PostMapping("/register-manager")
     public ResponseEntity<Void> registerManager(@RequestBody UserCreateDto userCreateDto){
-        userService.register(userCreateDto);
+        userService.registerManager(userCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
     @PostMapping("/login")
+    @BanStop
     public ResponseEntity<TokenResponseDto> login(@RequestBody TokenRequestDto tokenRequestDto){
         return new ResponseEntity<>(userService.login(tokenRequestDto), HttpStatus.OK);
     }
@@ -36,6 +38,13 @@ public class UserController {
     @CheckPrivilege(roles = {"ADMIN"})
     public ResponseEntity<Void> banUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id){
         userService.banUserById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/unban/{id}")
+    @CheckPrivilege(roles = {"ADMIN"})
+    public ResponseEntity<Void> unbanUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id){
+        userService.unbanUserById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
