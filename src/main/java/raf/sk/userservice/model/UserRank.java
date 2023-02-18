@@ -22,5 +22,5 @@ public class UserRank {
     private Integer maxNumberOfRentDays;
     private Integer discount;
     @OneToMany(mappedBy = "userRank")
-    private List<User> listOfUsers;
+    private List<UserEntity> listOfUserEntities;
 }

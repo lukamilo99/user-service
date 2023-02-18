@@ -1,26 +1,30 @@
 package raf.sk.userservice.service.implementation;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import raf.sk.userservice.dto.rank.PresentRankDto;
 import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
 import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
+import raf.sk.userservice.exception.RankNotFoundException;
+import raf.sk.userservice.exception.RoleNotFoundException;
+import raf.sk.userservice.exception.UserNotFoundException;
 import raf.sk.userservice.mapper.UserMapper;
 import raf.sk.userservice.model.Role;
-import raf.sk.userservice.model.User;
+import raf.sk.userservice.model.UserEntity;
 import raf.sk.userservice.model.UserRank;
 import raf.sk.userservice.repository.RankRepository;
 import raf.sk.userservice.repository.RoleRepository;
 import raf.sk.userservice.repository.UserRepository;
-import raf.sk.userservice.security.service.TokenService;
+import raf.sk.userservice.security.JwtGenerator;
 import raf.sk.userservice.service.UserService;
 
-import java.util.Optional;
 @Service
 @Transactional
 @AllArgsConstructor
@@ -29,74 +33,71 @@ public class UserServiceImplementation implements UserService {
     private UserMapper userMapper;
     private RankRepository rankRepository;
     private RoleRepository roleRepository;
-    private TokenService tokenService;
+    private JwtGenerator jwtGenerator;
+    private AuthenticationManager authenticationManager;
 
     @Override
     public void registerClient(UserCreateDto dto) {
-        User user = userMapper.userCreateDtoToUser(dto);
-        Optional<UserRank> rank = rankRepository.findById(1L);
-        Optional<Role> role = roleRepository.findByType("CLIENT");
-        rank.ifPresent(user::setUserRank);
-        role.ifPresent(user::setRole);
-        role.ifPresent(role1 -> user.setRoleTypeBeforeBan(role1.getType()));
+        UserEntity userEntity = userMapper.userCreateDtoToUser(dto);
+        UserRank rank = rankRepository.findById(1L).orElseThrow(() -> new RankNotFoundException("Rank not found"));
+        Role role = roleRepository.findByType("CLIENT").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
-        userRepository.save(user);
+        userEntity.setRole(role);
+        userEntity.setUserRank(rank);
+        userEntity.setRoleTypeBeforeBan(role.getType());
+
+        userRepository.save(userEntity);
     }
 
     @Override
     public void registerManager(UserCreateDto dto) {
-        User user = userMapper.userCreateDtoToUser(dto);
-        Optional<Role> role = roleRepository.findByType("MANAGER");
-        role.ifPresent(user::setRole);
-        role.ifPresent(role1 -> user.setRoleTypeBeforeBan(role1.getType()));
+        UserEntity userEntity = userMapper.userCreateDtoToUser(dto);
+        Role role = roleRepository.findByType("MANAGER").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
-        userRepository.save(user);
+        userEntity.setRole(role);
+        userEntity.setRoleTypeBeforeBan(role.getType());
+
+        userRepository.save(userEntity);
     }
 
     @Override
     public TokenResponseDto login(TokenRequestDto tokenRequestDto) {
         String username = tokenRequestDto.getUsername();
         String password = tokenRequestDto.getPassword();
-        User user = userRepository.findByUsernameAndPassword(username, password).orElse(null); //bice exception ovde
 
-        Claims claims = Jwts.claims();
-        claims.put("id", user.getId());
-        claims.put("role", user.getRole().getType());
-        return new TokenResponseDto(tokenService.generateToken(claims));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return new TokenResponseDto(jwtGenerator.generate(authentication));
     }
 
     @Override
     public UserPresentDto findUserById(Long id) {
-        UserPresentDto dto = new UserPresentDto();
+        UserPresentDto userDto = new UserPresentDto();
         PresentRankDto rankDto = new PresentRankDto();
-        Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()){
-            rankDto.setType(user.get().getUserRank().getType());
-            rankDto.setDiscount(user.get().getUserRank().getDiscount());
-            dto.setRank(rankDto);
-            return dto;
-        }
-        else{
-            System.out.println("There is no user with id " + id);
-            return new UserPresentDto();
-        }
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        rankDto.setType(userEntity.getUserRank().getType());
+        rankDto.setDiscount(userEntity.getUserRank().getDiscount());
+        userDto.setRank(rankDto);
+
+        return userDto;
+
     }
     @Override
     public void banUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()) {
-            user.get().setRole(roleRepository.findByType("BANNED").get());
-            userRepository.save(user.get());
-        }
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Role role = roleRepository.findByType("BANNED").orElseThrow(() -> new RoleNotFoundException("Role not found"));
+
+        userEntity.setRole(role);
     }
 
     @Override
     public void unbanUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()) {
-            user.get().setRole(roleRepository.findByType(user.get().getRoleTypeBeforeBan()).get());
-            userRepository.save(user.get());
-        }
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Role role = roleRepository.findByType(userEntity.getRoleTypeBeforeBan()).orElseThrow(() -> new RoleNotFoundException("Role not found"));
+
+        userEntity.setRole(role);
     }
 
     @Override
@@ -106,42 +107,28 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public void updateUserById(Long id, UserCreateDto dto) {
-        Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()){
-            userRepository.save(userMapper.userCreateDtoToUser(dto));
-        }
-        else{
-            System.out.println("There is no user with id " + id);
-        }
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        userRepository.save(userMapper.userCreateDtoToUser(dto));
     }
 
     @Override
     public void updateUserReservationDays(Long id, int days) {
-        Optional<User> user = userRepository.findById(id);
-        int updatedNumberOfDays;
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         UserRank rankAfterUpdatedNumberOfDays;
+        int updatedNumberOfDays;
 
-        if(user.isPresent()){
-            updatedNumberOfDays = user.get().getNumberOfRentDays() + days;
-            rankAfterUpdatedNumberOfDays = isEligibleForUpgrade(updatedNumberOfDays);
+        updatedNumberOfDays = userEntity.getNumberOfRentDays() + days;
+        rankAfterUpdatedNumberOfDays = isEligibleForUpgrade(updatedNumberOfDays);
 
-            if(!rankAfterUpdatedNumberOfDays.equals(user.get().getUserRank())){
-                user.get().setUserRank(rankAfterUpdatedNumberOfDays);
-            }
-
-            user.get().setNumberOfRentDays(updatedNumberOfDays);
+        if(!rankAfterUpdatedNumberOfDays.equals(userEntity.getUserRank())){
+            userEntity.setUserRank(rankAfterUpdatedNumberOfDays);
         }
-        else{
-            System.out.println("There is no user with id " + id);
-        }
+
+        userEntity.setNumberOfRentDays(updatedNumberOfDays);
     }
 
     private UserRank isEligibleForUpgrade(int numberOfReservationDays){
-        Optional<UserRank> rank = rankRepository.findUserRankByNumOfRentDay(numberOfReservationDays);
-
-        if(rank.isPresent()){
-            return rank.get();
-        }
-        return null;
+        return rankRepository.findUserRankByNumOfRentDay(numberOfReservationDays).orElseThrow(() -> new RankNotFoundException("User not found"));
     }
 }

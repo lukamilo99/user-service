@@ -8,8 +8,6 @@ import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
 import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
-import raf.sk.userservice.security.service.annotation.BanStop;
-import raf.sk.userservice.security.service.annotation.CheckPrivilege;
 import raf.sk.userservice.service.UserService;
 
 @RestController
@@ -18,52 +16,46 @@ import raf.sk.userservice.service.UserService;
 public class UserController {
     private UserService userService;
 
-    @PostMapping("/register-client")
+    @PostMapping("/auth/register-client")
     public ResponseEntity<Void> registerClient(@RequestBody UserCreateDto userCreateDto){
         userService.registerClient(userCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/register-manager")
+    @PostMapping("/auth/register-manager")
     public ResponseEntity<Void> registerManager(@RequestBody UserCreateDto userCreateDto){
         userService.registerManager(userCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    @PostMapping("/login")
-    @BanStop
+    @PostMapping("/auth/login")
     public ResponseEntity<TokenResponseDto> login(@RequestBody TokenRequestDto tokenRequestDto){
         return new ResponseEntity<>(userService.login(tokenRequestDto), HttpStatus.OK);
     }
     @PutMapping("/ban/{id}")
-    @CheckPrivilege(roles = {"ADMIN"})
-    public ResponseEntity<Void> banUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id){
+    public ResponseEntity<Void> banUserById(@PathVariable Long id){
         userService.banUserById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/unban/{id}")
-    @CheckPrivilege(roles = {"ADMIN"})
-    public ResponseEntity<Void> unbanUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id){
+    public ResponseEntity<Void> unbanUserById(@PathVariable Long id){
         userService.unbanUserById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/find/{id}")
-    @CheckPrivilege(roles = {"ADMIN", "CLIENT", "MANAGER"})
     public ResponseEntity<UserPresentDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id){
         return new ResponseEntity<>(userService.findUserById(id), HttpStatus.OK);
     }
 
     @PutMapping("update/{id}")
-    @CheckPrivilege(roles = {"ADMIN", "MANAGER", "CLIENT"})
     public ResponseEntity<Void> updateUserById(@RequestHeader("Authorization") String authorization, @PathVariable Long id, @RequestBody UserCreateDto dto){
         userService.updateUserById(id, dto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping("updateReservationDays/{id}")
-    @CheckPrivilege(roles = {"ADMIN"})
-    public ResponseEntity<Void> updateReservationDays(@RequestHeader("Authorization") String authorization, @PathVariable Long id, @RequestParam int numOfDays){
+    @PutMapping("/updateReservationDays/{id}")
+    public ResponseEntity<Void> updateReservationDays(@PathVariable Long id, @RequestParam int numOfDays){
         userService.updateUserReservationDays(id, numOfDays);
         return new ResponseEntity<>(HttpStatus.OK);
     }

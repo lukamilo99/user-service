@@ -1,32 +1,38 @@
 package raf.sk.userservice.mapper;
 
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import raf.sk.userservice.dto.user.UserCreateDto;
 import raf.sk.userservice.dto.user.UserPresentDto;
-import raf.sk.userservice.model.User;
+import raf.sk.userservice.model.UserEntity;
 
 @Component
+@AllArgsConstructor
 public class UserMapper {
-    public UserPresentDto userToUserPresentDto(User user){
+
+    private PasswordEncoder passwordEncoder;
+
+    public UserPresentDto userToUserPresentDto(UserEntity userEntity){
         UserPresentDto userPresentDto = new UserPresentDto();
-        userPresentDto.setName(user.getName());
-        userPresentDto.setLastname(user.getLastname());
-        userPresentDto.setEmail(user.getEmail());
-        userPresentDto.setDateOfBirth(user.getDateOfBirth());
-        userPresentDto.setPhoneNumber(user.getPhoneNumber());
-        userPresentDto.setNumberOfRentDays(user.getNumberOfRentDays());
+        userPresentDto.setName(userEntity.getName());
+        userPresentDto.setLastname(userEntity.getLastname());
+        userPresentDto.setEmail(userEntity.getEmail());
+        userPresentDto.setDateOfBirth(userEntity.getDateOfBirth());
+        userPresentDto.setPhoneNumber(userEntity.getPhoneNumber());
+        userPresentDto.setNumberOfRentDays(userEntity.getNumberOfRentDays());
         return userPresentDto;
     }
 
-    public User userCreateDtoToUser(UserCreateDto userCreateDto){
-        User user = new User();
-        user.setName(userCreateDto.getName());
-        user.setLastname(userCreateDto.getLastname());
-        user.setUsername(userCreateDto.getUsername());
-        user.setPassword(userCreateDto.getPassword());
-        user.setDateOfBirth(userCreateDto.getDateOfBirth());
-        user.setPhoneNumber(userCreateDto.getPhoneNumber());
-        user.setNumberOfRentDays(0);
-        return user;
+    public UserEntity userCreateDtoToUser(UserCreateDto userCreateDto){
+        UserEntity userEntity = new UserEntity();
+        userEntity.setName(userCreateDto.getName());
+        userEntity.setLastname(userCreateDto.getLastname());
+        userEntity.setUsername(userCreateDto.getUsername());
+        userEntity.setPassword(passwordEncoder.encode(userCreateDto.getPassword()));
+        userEntity.setDateOfBirth(userCreateDto.getDateOfBirth());
+        userEntity.setPhoneNumber(userCreateDto.getPhoneNumber());
+        userEntity.setNumberOfRentDays(0);
+        return userEntity;
     }
 }

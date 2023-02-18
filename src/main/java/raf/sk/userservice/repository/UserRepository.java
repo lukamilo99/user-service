@@ -2,11 +2,11 @@ package raf.sk.userservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import raf.sk.userservice.model.User;
+import raf.sk.userservice.model.UserEntity;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsernameAndPassword(String username, String password);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    Optional<UserEntity> findByUsername(String username);
 }
