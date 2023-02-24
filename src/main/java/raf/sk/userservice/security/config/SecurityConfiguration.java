@@ -17,23 +17,23 @@ import raf.sk.userservice.security.filter.JwtAuthenticationFilter;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
-public class SecurityConfiguration{
+public class SecurityConfiguration {
 
     private CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 
         try {
             http
-                    .csrf().disable() //kasnije promeniti
+                    .csrf().disable()
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
                     .authorizeHttpRequests()
                     .requestMatchers("/user/ban/**", "/user/unban/**", "/user/updateReservationDays/**", "/user/find/**").hasAuthority("ADMIN")
-                    .requestMatchers("/user/update/**").hasAnyAuthority("CLIENT", "MANAGER")
-                    .requestMatchers("/user/auth/**").permitAll()
+                    .requestMatchers("/user/update").hasAnyAuthority("CLIENT", "MANAGER")
+                    .requestMatchers("/user/auth/**", "/inter-service/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
                     .httpBasic()
@@ -56,12 +56,12 @@ public class SecurityConfiguration{
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

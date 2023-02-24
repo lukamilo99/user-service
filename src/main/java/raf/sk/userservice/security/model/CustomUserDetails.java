@@ -1,9 +1,8 @@
-package raf.sk.userservice.security;
+package raf.sk.userservice.security.model;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-
 import java.util.Collection;
 @Getter
 public class CustomUserDetails extends User {
@@ -13,5 +12,6 @@ public class CustomUserDetails extends User {
     public CustomUserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities, Long id) {
         super(username, password, authorities);
         this.id = id;
+
     }
 }

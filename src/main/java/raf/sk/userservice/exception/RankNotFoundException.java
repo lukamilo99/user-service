@@ -5,5 +5,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class RankNotFoundException extends RuntimeException{
 
-    private String message;
+    public RankNotFoundException(String message){
+        super(message);
+    }
 }

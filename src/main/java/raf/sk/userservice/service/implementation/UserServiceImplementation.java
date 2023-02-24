@@ -1,17 +1,15 @@
 package raf.sk.userservice.service.implementation;
 
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import raf.sk.userservice.dto.rank.PresentRankDto;
+import raf.sk.userservice.dto.auth.UserDetailsDto;
+import raf.sk.userservice.dto.rank.RankResponseDto;
 import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
-import raf.sk.userservice.dto.user.UserCreateDto;
-import raf.sk.userservice.dto.user.UserPresentDto;
+import raf.sk.userservice.dto.user.UserRequestDto;
+import raf.sk.userservice.dto.user.UserResponseDto;
 import raf.sk.userservice.exception.RankNotFoundException;
 import raf.sk.userservice.exception.RoleNotFoundException;
 import raf.sk.userservice.exception.UserNotFoundException;
@@ -22,23 +20,34 @@ import raf.sk.userservice.model.UserRank;
 import raf.sk.userservice.repository.RankRepository;
 import raf.sk.userservice.repository.RoleRepository;
 import raf.sk.userservice.repository.UserRepository;
-import raf.sk.userservice.security.JwtGenerator;
+import raf.sk.userservice.security.jwt.JwtUtils;
+import raf.sk.userservice.security.model.CustomUserDetails;
 import raf.sk.userservice.service.UserService;
 
 @Service
 @Transactional
-@AllArgsConstructor
 public class UserServiceImplementation implements UserService {
+
     private UserRepository userRepository;
     private UserMapper userMapper;
     private RankRepository rankRepository;
     private RoleRepository roleRepository;
-    private JwtGenerator jwtGenerator;
-    private AuthenticationManager authenticationManager;
+    private JwtUtils jwtUtils;
+    private PasswordEncoder passwordEncoder;
+    private CustomUserDetails userDetails;
+
+    public UserServiceImplementation(UserRepository userRepository, UserMapper userMapper, RankRepository rankRepository, RoleRepository roleRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.rankRepository = rankRepository;
+        this.roleRepository = roleRepository;
+        this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
-    public void registerClient(UserCreateDto dto) {
-        UserEntity userEntity = userMapper.userCreateDtoToUser(dto);
+    public void registerClient(UserRequestDto dto) {
+        UserEntity userEntity = userMapper.userRequestDtoToUser(dto);
         UserRank rank = rankRepository.findById(1L).orElseThrow(() -> new RankNotFoundException("Rank not found"));
         Role role = roleRepository.findByType("CLIENT").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
@@ -50,8 +59,8 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public void registerManager(UserCreateDto dto) {
-        UserEntity userEntity = userMapper.userCreateDtoToUser(dto);
+    public void registerManager(UserRequestDto dto) {
+        UserEntity userEntity = userMapper.userRequestDtoToUser(dto);
         Role role = roleRepository.findByType("MANAGER").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
         userEntity.setRole(role);
@@ -65,16 +74,20 @@ public class UserServiceImplementation implements UserService {
         String username = tokenRequestDto.getUsername();
         String password = tokenRequestDto.getPassword();
 
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
-        return new TokenResponseDto(jwtGenerator.generate(authentication));
+        UserDetailsDto userDetailsDto = new UserDetailsDto(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getRole().getType());
+
+        if(passwordEncoder.matches(password, user.getPassword())){
+            return new TokenResponseDto(jwtUtils.generateToken(userDetailsDto));
+        }
+        else throw new UserNotFoundException("Incorrect password");
     }
 
     @Override
-    public UserPresentDto findUserById(Long id) {
-        UserPresentDto userDto = new UserPresentDto();
-        PresentRankDto rankDto = new PresentRankDto();
+    public UserResponseDto findUserById(Long id) {
+        UserResponseDto userDto = new UserResponseDto();
+        RankResponseDto rankDto = new RankResponseDto();
         UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         rankDto.setType(userEntity.getUserRank().getType());
@@ -82,7 +95,6 @@ public class UserServiceImplementation implements UserService {
         userDto.setRank(rankDto);
 
         return userDto;
-
     }
     @Override
     public void banUserById(Long id) {
@@ -106,10 +118,12 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public void updateUserById(Long id, UserCreateDto dto) {
-        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+    public void updateUserById(UserRequestDto dto) {
+        userDetails = getUserDetails();
+        Long id = userDetails.getId();
 
-        userRepository.save(userMapper.userCreateDtoToUser(dto));
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        userEntity.setName(dto.getName());
     }
 
     @Override
@@ -129,6 +143,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     private UserRank isEligibleForUpgrade(int numberOfReservationDays){
-        return rankRepository.findUserRankByNumOfRentDay(numberOfReservationDays).orElseThrow(() -> new RankNotFoundException("User not found"));
+        return rankRepository.findUserRankByNumOfRentDay(numberOfReservationDays).orElseThrow(() -> new RankNotFoundException("Rank not found"));
+    }
+
+    private CustomUserDetails getUserDetails(){
+        return (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

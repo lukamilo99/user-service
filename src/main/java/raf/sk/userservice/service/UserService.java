@@ -2,17 +2,17 @@ package raf.sk.userservice.service;
 
 import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
-import raf.sk.userservice.dto.user.UserCreateDto;
-import raf.sk.userservice.dto.user.UserPresentDto;
+import raf.sk.userservice.dto.user.UserRequestDto;
+import raf.sk.userservice.dto.user.UserResponseDto;
 
 public interface UserService {
-    void registerClient(UserCreateDto dto);
-    void registerManager(UserCreateDto dto);
+    void registerClient(UserRequestDto dto);
+    void registerManager(UserRequestDto dto);
     TokenResponseDto login(TokenRequestDto tokenRequestDto);
-    UserPresentDto findUserById(Long id);
+    UserResponseDto findUserById(Long id);
     void banUserById(Long id);
     void unbanUserById(Long id);
     void deleteUserById(Long id);
-    void updateUserById(Long id, UserCreateDto dto);
+    void updateUserById(UserRequestDto dto);
     void updateUserReservationDays(Long id, int days);
 }

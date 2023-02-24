@@ -9,33 +9,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import raf.sk.userservice.security.JwtGenerator;
-import raf.sk.userservice.security.service.CustomUserDetailsService;
+import raf.sk.userservice.security.service.UserDetailsService;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     @Autowired
-    private JwtGenerator jwtGenerator;
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
 
-        if(!token.isEmpty() && jwtGenerator.validateToken(token)){
-            String username = jwtGenerator.getUsernameFromToken(token);
+        UserDetails userDetails = userDetailsService.getUserDetails(token);
+        setAuthenticationToContext(userDetails);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    userDetails.getAuthorities());
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }
         filterChain.doFilter(request, response);
+    }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        return request.getRequestURI().contains("/inter-service") || request.getRequestURI().contains("/user/auth");
     }
 
     private String getTokenFromRequest(HttpServletRequest request){
@@ -45,5 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return "";
+    }
+
+    private void setAuthenticationToContext(UserDetails userDetails){
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 }

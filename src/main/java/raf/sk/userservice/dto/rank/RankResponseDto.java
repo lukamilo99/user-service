@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PresentRankDto {
+public class RankResponseDto {
+
     private String type;
     private Integer discount;
 }

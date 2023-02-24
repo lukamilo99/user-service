@@ -4,5 +4,9 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class RoleNotFoundException extends RuntimeException{
-    private String message;
+
+    public RoleNotFoundException(String message){
+        super(message);
+    }
 }
+
