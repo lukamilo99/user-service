@@ -8,9 +8,10 @@ import raf.sk.userservice.repository.RoleRepository;
 import raf.sk.userservice.service.RoleService;
 
 import java.util.Optional;
+
+@AllArgsConstructor
 @Service
 @Transactional
-@AllArgsConstructor
 public class RoleServiceImplementation implements RoleService {
     private RoleRepository roleRepository;
     @Override

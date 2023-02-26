@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raf.sk.userservice.model.UserRank;
-import raf.sk.userservice.service.implementation.RankServiceImplementation;
+import raf.sk.userservice.service.RankService;
 
 @RestController
 @RequestMapping("/rank")
 @AllArgsConstructor
 public class RankController {
-    private RankServiceImplementation rankService;
+    private RankService rankService;
     @GetMapping("/discount/{days}")
     public ResponseEntity<UserRank> findDiscountByNumOfRentDays(@PathVariable int days){
         return new ResponseEntity<>(rankService.findRankByNumOfRentDays(days), HttpStatus.OK);

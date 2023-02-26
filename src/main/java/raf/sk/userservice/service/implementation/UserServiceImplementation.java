@@ -1,10 +1,10 @@
 package raf.sk.userservice.service.implementation;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import raf.sk.userservice.dto.auth.UserDetailsDto;
 import raf.sk.userservice.dto.rank.RankResponseDto;
 import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
@@ -24,49 +24,42 @@ import raf.sk.userservice.security.jwt.JwtUtils;
 import raf.sk.userservice.security.model.CustomUserDetails;
 import raf.sk.userservice.service.UserService;
 
+@AllArgsConstructor
 @Service
 @Transactional
 public class UserServiceImplementation implements UserService {
 
     private UserRepository userRepository;
-    private UserMapper userMapper;
     private RankRepository rankRepository;
     private RoleRepository roleRepository;
     private JwtUtils jwtUtils;
     private PasswordEncoder passwordEncoder;
-    private CustomUserDetails userDetails;
-
-    public UserServiceImplementation(UserRepository userRepository, UserMapper userMapper, RankRepository rankRepository, RoleRepository roleRepository, JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.rankRepository = rankRepository;
-        this.roleRepository = roleRepository;
-        this.jwtUtils = jwtUtils;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private UserMapper userMapper;
 
     @Override
-    public void registerClient(UserRequestDto dto) {
-        UserEntity userEntity = userMapper.userRequestDtoToUser(dto);
+    public UserEntity registerClient(UserRequestDto dto) {
+        UserEntity user = userMapper.userRequestDtoToUser(dto);
         UserRank rank = rankRepository.findById(1L).orElseThrow(() -> new RankNotFoundException("Rank not found"));
         Role role = roleRepository.findByType("CLIENT").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
-        userEntity.setRole(role);
-        userEntity.setUserRank(rank);
-        userEntity.setRoleTypeBeforeBan(role.getType());
+        user.setRole(role);
+        user.setUserRank(rank);
+        user.setRoleTypeBeforeBan(role.getType());
 
-        userRepository.save(userEntity);
+        userRepository.save(user);
+        return user;
     }
 
     @Override
-    public void registerManager(UserRequestDto dto) {
-        UserEntity userEntity = userMapper.userRequestDtoToUser(dto);
+    public UserEntity registerManager(UserRequestDto dto) {
+        UserEntity user = userMapper.userRequestDtoToUser(dto);
         Role role = roleRepository.findByType("MANAGER").orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
-        userEntity.setRole(role);
-        userEntity.setRoleTypeBeforeBan(role.getType());
+        user.setRole(role);
+        user.setRoleTypeBeforeBan(role.getType());
 
-        userRepository.save(userEntity);
+        userRepository.save(user);
+        return user;
     }
 
     @Override
@@ -76,10 +69,8 @@ public class UserServiceImplementation implements UserService {
 
         UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
-        UserDetailsDto userDetailsDto = new UserDetailsDto(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getRole().getType());
-
         if(passwordEncoder.matches(password, user.getPassword())){
-            return new TokenResponseDto(jwtUtils.generateToken(userDetailsDto));
+            return new TokenResponseDto(jwtUtils.generateToken(user.getId(), user.getRole().getType()));
         }
         else throw new UserNotFoundException("Incorrect password");
     }
@@ -119,21 +110,19 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public void updateUserById(UserRequestDto dto) {
-        userDetails = getUserDetails();
+        CustomUserDetails userDetails = getUserDetails();
         Long id = userDetails.getId();
 
         UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
-        userEntity.setName(dto.getName());
+        userEntity.setName(dto.getFirstname());
     }
 
     @Override
     public void updateUserReservationDays(Long id, int days) {
         UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
-        UserRank rankAfterUpdatedNumberOfDays;
-        int updatedNumberOfDays;
 
-        updatedNumberOfDays = userEntity.getNumberOfRentDays() + days;
-        rankAfterUpdatedNumberOfDays = isEligibleForUpgrade(updatedNumberOfDays);
+        int updatedNumberOfDays = userEntity.getNumberOfRentDays() + days;
+        UserRank rankAfterUpdatedNumberOfDays = isEligibleForUpgrade(updatedNumberOfDays);
 
         if(!rankAfterUpdatedNumberOfDays.equals(userEntity.getUserRank())){
             userEntity.setUserRank(rankAfterUpdatedNumberOfDays);

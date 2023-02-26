@@ -10,7 +10,7 @@ import java.sql.Date;
 @NoArgsConstructor
 public class UserRequestDto {
 
-    private String name;
+    private String firstname;
     private String lastname;
     private String username;
     private String password;

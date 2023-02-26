@@ -28,4 +28,5 @@ public class UserEntity {
     @ManyToOne
     private UserRank userRank;
     private String roleTypeBeforeBan;
+    private boolean enabled;
 }

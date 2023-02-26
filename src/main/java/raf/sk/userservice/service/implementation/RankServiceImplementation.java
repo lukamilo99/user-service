@@ -7,9 +7,9 @@ import raf.sk.userservice.model.UserRank;
 import raf.sk.userservice.repository.RankRepository;
 import raf.sk.userservice.service.RankService;
 
+@AllArgsConstructor
 @Service
 @Transactional
-@AllArgsConstructor
 public class RankServiceImplementation implements RankService {
     private RankRepository rankRepository;
     @Override

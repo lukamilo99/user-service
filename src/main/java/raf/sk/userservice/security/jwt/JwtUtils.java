@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import raf.sk.userservice.dto.auth.UserDetailsDto;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ public class JwtUtils {
     @Value("${oauth.jwt.secret}")
     private String jwtSecret;
 
-    public String generateToken(UserDetailsDto userDetailsDto){
+    public String generateToken(Long userId, String role){
 
         Date startDate = new Date(System.currentTimeMillis());
         Date expireDate = new Date(startDate.getTime() + 1200000);
@@ -24,8 +23,8 @@ public class JwtUtils {
         byte[] decodedSecret = Base64.getDecoder().decode(jwtSecret.getBytes());
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", userDetailsDto.getId());
-        claims.put("role", userDetailsDto.getRole());
+        claims.put("id", userId);
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)

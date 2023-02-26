@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

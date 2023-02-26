@@ -6,6 +6,7 @@ import raf.sk.userservice.model.UserRank;
 
 @Component
 public class RankMapper {
+
     RankResponseDto toDto(UserRank rank){
         RankResponseDto dto = new RankResponseDto();
         dto.setDiscount(rank.getDiscount());

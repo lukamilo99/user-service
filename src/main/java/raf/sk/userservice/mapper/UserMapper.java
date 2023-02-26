@@ -15,25 +15,28 @@ public class UserMapper {
 
     public UserResponseDto userToUserPresentDto(UserEntity userEntity){
         UserResponseDto userResponseDto = new UserResponseDto();
-        userResponseDto.setName(userEntity.getName());
+
+        userResponseDto.setFirstname(userEntity.getName());
         userResponseDto.setLastname(userEntity.getLastname());
         userResponseDto.setEmail(userEntity.getEmail());
-        userResponseDto.setDateOfBirth(userEntity.getDateOfBirth());
         userResponseDto.setPhoneNumber(userEntity.getPhoneNumber());
-        userResponseDto.setNumberOfRentDays(userEntity.getNumberOfRentDays());
+
         return userResponseDto;
     }
 
     public UserEntity userRequestDtoToUser(UserRequestDto userRequestDto){
         UserEntity userEntity = new UserEntity();
 
-        userEntity.setName(userRequestDto.getName());
+        userEntity.setName(userRequestDto.getFirstname());
         userEntity.setLastname(userRequestDto.getLastname());
         userEntity.setUsername(userRequestDto.getUsername());
+        userEntity.setEmail(userRequestDto.getEmail());
         userEntity.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
         userEntity.setDateOfBirth(userRequestDto.getDateOfBirth());
         userEntity.setPhoneNumber(userRequestDto.getPhoneNumber());
         userEntity.setNumberOfRentDays(0);
+        userEntity.setEnabled(false);
+
         return userEntity;
     }
 }

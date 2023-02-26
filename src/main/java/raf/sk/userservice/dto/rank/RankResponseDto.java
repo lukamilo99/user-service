@@ -10,5 +10,5 @@ import lombok.Setter;
 public class RankResponseDto {
 
     private String type;
-    private Integer discount;
+    private Double discount;
 }

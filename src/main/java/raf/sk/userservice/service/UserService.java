@@ -4,10 +4,11 @@ import raf.sk.userservice.dto.token.TokenRequestDto;
 import raf.sk.userservice.dto.token.TokenResponseDto;
 import raf.sk.userservice.dto.user.UserRequestDto;
 import raf.sk.userservice.dto.user.UserResponseDto;
+import raf.sk.userservice.model.UserEntity;
 
 public interface UserService {
-    void registerClient(UserRequestDto dto);
-    void registerManager(UserRequestDto dto);
+    UserEntity registerClient(UserRequestDto dto);
+    UserEntity registerManager(UserRequestDto dto);
     TokenResponseDto login(TokenRequestDto tokenRequestDto);
     UserResponseDto findUserById(Long id);
     void banUserById(Long id);

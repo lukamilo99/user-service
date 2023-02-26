@@ -20,7 +20,7 @@ public class UserRank {
     private String type;
     private Integer minNumberOfRentDays;
     private Integer maxNumberOfRentDays;
-    private Integer discount;
+    private Double discount;
     @OneToMany(mappedBy = "userRank")
     private List<UserEntity> listOfUserEntities;
 }
