@@ -14,7 +14,9 @@ import raf.sk.userservice.service.RankService;
 @RequestMapping("/rank")
 @AllArgsConstructor
 public class RankController {
+
     private RankService rankService;
+
     @GetMapping("/discount/{days}")
     public ResponseEntity<UserRank> findDiscountByNumOfRentDays(@PathVariable int days){
         return new ResponseEntity<>(rankService.findRankByNumOfRentDays(days), HttpStatus.OK);

@@ -6,7 +6,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import raf.sk.userservice.dto.notification.NotificationDto;
+import raf.sk.userservice.dto.interservice.NotificationDto;
 import raf.sk.userservice.event.RegistrationEvent;
 import raf.sk.userservice.mapper.NotificationMapper;
 import raf.sk.userservice.model.ConformationToken;
@@ -28,6 +28,7 @@ public class RegistrationListener implements ApplicationListener<RegistrationEve
     private ObjectMapper objectMapper;
 
     public RegistrationListener(ConformationTokenService tokenService, RabbitTemplate rabbitTemplate, ObjectMapper objectMapper, NotificationMapper notificationMapper) {
+
         this.tokenService = tokenService;
         this.rabbitTemplate = rabbitTemplate;
         this.objectMapper = objectMapper;
@@ -47,7 +48,6 @@ public class RegistrationListener implements ApplicationListener<RegistrationEve
     }
 
     private String serialize(NotificationDto notificationDto){
-
         try {
             return objectMapper.writeValueAsString(notificationDto);
         } catch (JsonProcessingException e) {

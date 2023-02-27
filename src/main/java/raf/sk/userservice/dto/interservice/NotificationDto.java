@@ -1,12 +1,10 @@
-package raf.sk.userservice.dto.notification;
+package raf.sk.userservice.dto.interservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter

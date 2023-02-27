@@ -17,6 +17,7 @@ public class InterServiceController {
     @PutMapping("/updateReservationDays/{id}")
     public ResponseEntity<Void> updateReservationDays(@PathVariable Long id, @RequestParam(value = "numOfDays") int numOfDays){
         userService.updateUserReservationDays(id, numOfDays);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

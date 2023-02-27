@@ -52,6 +52,7 @@ public class UserController {
     @PutMapping("/ban/{id}")
     public ResponseEntity<Void> banUserById(@PathVariable Long id){
         userService.banUserById(id);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

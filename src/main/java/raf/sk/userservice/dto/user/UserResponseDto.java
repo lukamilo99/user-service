@@ -14,6 +14,5 @@ public class UserResponseDto {
     private String lastname;
     private String email;
     private String phoneNumber;
-    private Integer numberOfRentDays;
     private RankResponseDto rank;
 }

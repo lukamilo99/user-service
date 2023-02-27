@@ -23,7 +23,6 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-
         try {
             http
                     .csrf().disable()

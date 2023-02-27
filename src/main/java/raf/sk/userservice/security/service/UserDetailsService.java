@@ -17,7 +17,6 @@ public class UserDetailsService {
     private JwtUtils jwtUtils;
 
     public UserDetails getUserDetails(String token){
-
         Claims claims = jwtUtils.getTokenClaims(token);
 
         Long id = Long.valueOf(String.valueOf(claims.get("id")));

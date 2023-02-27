@@ -1,7 +1,7 @@
 package raf.sk.userservice.mapper;
 
 import org.springframework.stereotype.Component;
-import raf.sk.userservice.dto.notification.NotificationDto;
+import raf.sk.userservice.dto.interservice.NotificationDto;
 import raf.sk.userservice.model.UserEntity;
 
 @Component

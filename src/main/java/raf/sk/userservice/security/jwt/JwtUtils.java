@@ -16,7 +16,6 @@ public class JwtUtils {
     private String jwtSecret;
 
     public String generateToken(Long userId, String role){
-
         Date startDate = new Date(System.currentTimeMillis());
         Date expireDate = new Date(startDate.getTime() + 1200000);
 
@@ -35,7 +34,6 @@ public class JwtUtils {
     }
 
     public Claims getTokenClaims(String token) {
-
         byte[] decodedSecret = Base64.getDecoder().decode(jwtSecret.getBytes());
 
         try {

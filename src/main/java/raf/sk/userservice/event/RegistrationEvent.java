@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 import raf.sk.userservice.model.UserEntity;
+
 @Getter
 @Setter
 public class RegistrationEvent extends ApplicationEvent {
