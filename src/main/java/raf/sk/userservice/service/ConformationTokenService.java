@@ -9,5 +9,6 @@ public interface ConformationTokenService {
     void saveConformationToken(ConformationToken token);
     ConformationToken findConformationTokenByToken(String token);
     ConformationToken createToken(UserEntity user, String type);
+    String confirmRegistration(String token);
 
 }

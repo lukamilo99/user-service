@@ -13,7 +13,7 @@ public class UserMapper {
 
     private PasswordEncoder passwordEncoder;
 
-    public UserResponseDto userToUserPresentDto(UserEntity userEntity){
+    public UserResponseDto userToUserResponseDto(UserEntity userEntity){
         UserResponseDto userResponseDto = new UserResponseDto();
 
         userResponseDto.setFirstname(userEntity.getName());

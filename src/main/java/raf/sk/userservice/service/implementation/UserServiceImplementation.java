@@ -69,10 +69,10 @@ public class UserServiceImplementation implements UserService {
 
         UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
-        if(passwordEncoder.matches(password, user.getPassword())){
+        if(passwordEncoder.matches(password, user.getPassword()) && user.isEnabled()){
             return new TokenResponseDto(jwtUtils.generateToken(user.getId(), user.getRole().getType()));
         }
-        else throw new UserNotFoundException("Incorrect password");
+        else throw new UserNotFoundException("Incorrect password or user not confirmed");
     }
 
     @Override

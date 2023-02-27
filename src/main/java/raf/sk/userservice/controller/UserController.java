@@ -12,6 +12,7 @@ import raf.sk.userservice.dto.user.UserRequestDto;
 import raf.sk.userservice.dto.user.UserResponseDto;
 import raf.sk.userservice.event.RegistrationEvent;
 import raf.sk.userservice.model.UserEntity;
+import raf.sk.userservice.service.ConformationTokenService;
 import raf.sk.userservice.service.UserService;
 
 @RestController
@@ -20,6 +21,7 @@ import raf.sk.userservice.service.UserService;
 public class UserController {
 
     private UserService userService;
+    private ConformationTokenService tokenService;
     private ApplicationEventPublisher eventPublisher;
 
     @PostMapping("/auth/register-manager")
@@ -42,6 +44,10 @@ public class UserController {
         return new ResponseEntity<>(userService.login(tokenRequestDto), HttpStatus.OK);
     }
 
+    @GetMapping("/auth/confirm-registration")
+    public ResponseEntity<String> confirmRegistration(@RequestParam String token){
+        return new ResponseEntity<>(tokenService.confirmRegistration(token), HttpStatus.OK);
+    }
 
     @PutMapping("/ban/{id}")
     public ResponseEntity<Void> banUserById(@PathVariable Long id){

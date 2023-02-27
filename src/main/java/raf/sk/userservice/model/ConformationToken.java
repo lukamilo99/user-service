@@ -15,12 +15,10 @@ import java.util.UUID;
 @Entity
 public class ConformationToken {
 
-    private final long EXPIRATION_TIME = 120000L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private UserEntity user;
     private String type;
     private String token;
@@ -31,6 +29,6 @@ public class ConformationToken {
         this.user = user;
         this.type = type;
         this.token = UUID.randomUUID().toString();
-        this.expireDate = new Date(System.currentTimeMillis() + EXPIRATION_TIME);
+        this.expireDate = new Date(System.currentTimeMillis() + 120000L);
     }
 }

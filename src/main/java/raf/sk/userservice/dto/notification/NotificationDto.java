@@ -1,4 +1,4 @@
-package raf.sk.userservice.broker.dto;
+package raf.sk.userservice.dto.notification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -29,4 +29,18 @@ public class ConformationTokenServiceImpl implements ConformationTokenService {
     public ConformationToken createToken(UserEntity user, String type){
         return new ConformationToken(user, type);
     }
+
+    @Override
+    public String confirmRegistration(String token) {
+        ConformationToken conformationToken = tokenRepository.findConformationTokenByToken(token).orElseThrow(() -> new RuntimeException("Token not found"));
+        UserEntity user = conformationToken.getUser();
+
+        if(conformationToken.getExpireDate().getTime() - System.currentTimeMillis() <= 0){
+            return "Token expired";
+        }
+        else{
+            user.setEnabled(true);
+            return "Successfully registered";
+        }
+    }
 }

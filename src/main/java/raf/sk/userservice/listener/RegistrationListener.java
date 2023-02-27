@@ -6,8 +6,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import raf.sk.userservice.broker.dto.NotificationDto;
+import raf.sk.userservice.dto.notification.NotificationDto;
 import raf.sk.userservice.event.RegistrationEvent;
+import raf.sk.userservice.mapper.NotificationMapper;
 import raf.sk.userservice.model.ConformationToken;
 import raf.sk.userservice.model.UserEntity;
 import raf.sk.userservice.service.ConformationTokenService;
@@ -23,12 +24,14 @@ public class RegistrationListener implements ApplicationListener<RegistrationEve
     private String routingKey;
     private ConformationTokenService tokenService;
     private RabbitTemplate rabbitTemplate;
+    private NotificationMapper notificationMapper;
     private ObjectMapper objectMapper;
 
-    public RegistrationListener(ConformationTokenService tokenService, RabbitTemplate rabbitTemplate) {
+    public RegistrationListener(ConformationTokenService tokenService, RabbitTemplate rabbitTemplate, ObjectMapper objectMapper, NotificationMapper notificationMapper) {
         this.tokenService = tokenService;
         this.rabbitTemplate = rabbitTemplate;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
+        this.notificationMapper = notificationMapper;
     }
 
     @Override
@@ -36,16 +39,11 @@ public class RegistrationListener implements ApplicationListener<RegistrationEve
         UserEntity registeredUser = event.getUser();
         ConformationToken conformationToken = tokenService.createToken(registeredUser, NOTIFICATION_TYPE);
 
-        System.out.println(registeredUser.getEmail());
-
-        NotificationDto notificationInfo = new NotificationDto();
+        NotificationDto notificationInfo = notificationMapper.userToNotificationDto(registeredUser, conformationToken.getToken());
         notificationInfo.setNotificationType(NOTIFICATION_TYPE);
-        notificationInfo.setToken(conformationToken.getToken());
-        notificationInfo.setReceiverEmail(registeredUser.getEmail());
-        notificationInfo.setReceiverFirstname(registeredUser.getName());
-        notificationInfo.setReceiverLastname(registeredUser.getLastname());
 
         rabbitTemplate.convertAndSend(exchange, routingKey, serialize(notificationInfo));
+        tokenService.saveConformationToken(conformationToken);
     }
 
     private String serialize(NotificationDto notificationDto){

@@ -7,6 +7,7 @@ import raf.sk.userservice.dto.user.UserResponseDto;
 import raf.sk.userservice.model.UserEntity;
 
 public interface UserService {
+
     UserEntity registerClient(UserRequestDto dto);
     UserEntity registerManager(UserRequestDto dto);
     TokenResponseDto login(TokenRequestDto tokenRequestDto);

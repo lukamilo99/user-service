@@ -6,11 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.sql.Date;
 
-@Entity
 @Table(name = "user")
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
